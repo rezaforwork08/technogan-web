@@ -1,29 +1,115 @@
 <x-layouts.app>
 
     <!-- Hero -->
-    <section class="relative overflow-hidden bg-primary-950">
-        <div class="pointer-events-none absolute inset-0 opacity-25" style="background-image: radial-gradient(circle at 15% 25%, #3B82F6 0, transparent 45%), radial-gradient(circle at 85% 75%, #BA8759 0, transparent 40%);"></div>
+    @if ($heroSlides->isNotEmpty())
+        <section
+            class="relative overflow-hidden bg-primary-950"
+            x-data="{
+                slides: {{ $heroSlides->count() }},
+                active: 0,
+                timer: null,
+                start() {
+                    this.timer = setInterval(() => this.next(), 6000);
+                },
+                next() { this.active = (this.active + 1) % this.slides; },
+                prev() { this.active = (this.active - 1 + this.slides) % this.slides; },
+                goTo(i) { this.active = i; clearInterval(this.timer); this.start(); },
+            }"
+            x-init="start()"
+        >
+            <div class="pointer-events-none absolute inset-0 opacity-25" style="background-image: radial-gradient(circle at 15% 25%, #3B82F6 0, transparent 45%), radial-gradient(circle at 85% 75%, #BA8759 0, transparent 40%);"></div>
 
-        <div class="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
-            <div class="mx-auto max-w-3xl text-center">
-                <p class="text-sm font-semibold uppercase tracking-widest text-accent-400">IT Solution &amp; Support</p>
-                <h1 class="mt-4 text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
-                    Mitra Teknologi Terpercaya untuk Bisnis Anda
-                </h1>
-                <p class="mt-6 text-lg text-slate-300">
-                    Technogan membantu perusahaan membangun infrastruktur IT, jaringan, sistem keamanan CCTV, dan layanan komputer yang andal — didukung teknisi bersertifikat dan respons cepat.
-                </p>
-                <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <a href="{{ route('contact') }}" class="inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-primary-900 shadow-lg transition hover:bg-slate-100">
-                        Konsultasi Gratis
-                    </a>
-                    <a href="{{ route('services.index') }}" class="inline-flex items-center justify-center rounded-full border border-white/30 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10">
-                        Lihat Layanan
-                    </a>
+            @foreach ($heroSlides as $slide)
+                <div
+                    x-show="active === {{ $loop->index }}"
+                    x-transition:enter="transition ease-out duration-700"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition ease-in duration-300"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    @if ($slide->image)
+                        style="background-image: linear-gradient(to bottom, rgba(2,6,23,.75), rgba(2,6,23,.85)), url('{{ asset('storage/' . $slide->image) }}'); background-size: cover; background-position: center;"
+                    @endif
+                    class="relative"
+                >
+                    <div class="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
+                        <div class="mx-auto max-w-3xl text-center">
+                            <p class="text-sm font-semibold uppercase tracking-widest text-accent-400">IT Solution &amp; Support</p>
+                            <h1 class="mt-4 text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
+                                {{ $slide->title }}
+                            </h1>
+                            @if ($slide->subtitle)
+                                <p class="mt-6 text-lg text-slate-300">
+                                    {{ $slide->subtitle }}
+                                </p>
+                            @endif
+                            <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                                @if ($slide->primary_button_text && $slide->primary_button_url)
+                                    <a href="{{ $slide->primary_button_url }}" class="inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-primary-900 shadow-lg transition hover:bg-slate-100">
+                                        {{ $slide->primary_button_text }}
+                                    </a>
+                                @endif
+                                @if ($slide->secondary_button_text && $slide->secondary_button_url)
+                                    <a href="{{ $slide->secondary_button_url }}" class="inline-flex items-center justify-center rounded-full border border-white/30 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10">
+                                        {{ $slide->secondary_button_text }}
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+
+            @if ($heroSlides->count() > 1)
+                <button @click="prev(); clearInterval(timer); start()" aria-label="Sebelumnya" class="absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/20 bg-white/10 p-2 text-white backdrop-blur transition hover:bg-white/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                    </svg>
+                </button>
+                <button @click="next(); clearInterval(timer); start()" aria-label="Berikutnya" class="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/20 bg-white/10 p-2 text-white backdrop-blur transition hover:bg-white/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                    </svg>
+                </button>
+
+                <div class="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+                    @foreach ($heroSlides as $slide)
+                        <button
+                            @click="goTo({{ $loop->index }})"
+                            :class="active === {{ $loop->index }} ? 'w-6 bg-white' : 'w-2 bg-white/40'"
+                            class="h-2 rounded-full transition-all"
+                            aria-label="Slide {{ $loop->iteration }}"
+                        ></button>
+                    @endforeach
+                </div>
+            @endif
+        </section>
+    @else
+        <section class="relative overflow-hidden bg-primary-950">
+            <div class="pointer-events-none absolute inset-0 opacity-25" style="background-image: radial-gradient(circle at 15% 25%, #3B82F6 0, transparent 45%), radial-gradient(circle at 85% 75%, #BA8759 0, transparent 40%);"></div>
+
+            <div class="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
+                <div class="mx-auto max-w-3xl text-center">
+                    <p class="text-sm font-semibold uppercase tracking-widest text-accent-400">IT Solution &amp; Support</p>
+                    <h1 class="mt-4 text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
+                        Mitra Teknologi Terpercaya untuk Bisnis Anda
+                    </h1>
+                    <p class="mt-6 text-lg text-slate-300">
+                        Technogan membantu perusahaan membangun infrastruktur IT, jaringan, sistem keamanan CCTV, dan layanan komputer yang andal — didukung teknisi bersertifikat dan respons cepat.
+                    </p>
+                    <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                        <a href="{{ route('contact') }}" class="inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-primary-900 shadow-lg transition hover:bg-slate-100">
+                            Konsultasi Gratis
+                        </a>
+                        <a href="{{ route('services.index') }}" class="inline-flex items-center justify-center rounded-full border border-white/30 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10">
+                            Lihat Layanan
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    @endif
 
     <!-- Featured Services -->
     <section class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">

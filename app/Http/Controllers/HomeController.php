@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BlogPost;
+use App\Models\HeroSlide;
 use App\Models\Portfolio;
 use App\Models\Service;
 use App\Models\Testimonial;
@@ -11,6 +12,10 @@ class HomeController extends Controller
 {
     public function index()
     {
+        $heroSlides = HeroSlide::active()
+            ->orderBy('order')
+            ->get();
+
         $services = Service::query()
             ->where('is_featured', true)
             ->orderBy('order')
@@ -35,6 +40,6 @@ class HomeController extends Controller
             ->take(3)
             ->get();
 
-        return view('home', compact('services', 'portfolios', 'testimonials', 'latestPosts'));
+        return view('home', compact('heroSlides', 'services', 'portfolios', 'testimonials', 'latestPosts'));
     }
 }
